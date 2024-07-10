@@ -1,0 +1,79 @@
+{% schema %}
+{
+  "name": "collection-product-grid",
+  "class": "section",
+  "settings": []
+}
+{% endschema %}
+
+<div class="collection-products">
+  <!-- Filter Options -->
+  <div class="filter-options">
+    <label for="sort-by">Sort by:</label>
+    <select id="sort-by">
+      <option value="price-ascending">Price, low to high</option>
+      <option value="price-descending">Price, high to low</option>
+    </select>
+  </div>
+
+  <div class="products-grid">
+    {% for product in collection.products %}
+      <div class="product-card" data-price="{{ product.price | money_without_currency }}">
+        <a href="{{ product.url }}">
+          <img src="{{ product.featured_image | img_url: 'medium' }}" alt="{{ product.title }}" class="product-image">
+          <h2>{{ product.title }}</h2>
+          <p>{{ product.price | money }}</p>
+        </a>
+        <form method="post" action="/cart/add">
+          <input type="hidden" name="id" value="{{ product.variants.first.id }}">
+          <button type="submit">Add to Cart</button>
+        </form>
+      </div>
+    {% endfor %}
+  </div>
+</div>
+
+<style>
+  .filter-options {
+    margin-bottom: 20px;
+  }
+  .products-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+  }
+  .product-card {
+    flex: 1 1 calc(20% - 10px);
+    border: 1px solid #ddd;
+    padding: 10px;
+  }
+  .product-card img {
+    width: 160px;
+    height: auto;
+  }
+  .product-card h2 {
+    font-size: 18px;
+    margin: 10px 0;
+  }
+  .product-card p {
+    font-size: 16px;
+    color: #555;
+  }
+</style>
+
+<script>
+  document.getElementById('sort-by').addEventListener('change', function() {
+    var sortBy = this.value;
+    var container = document.querySelector('.products-grid');
+    var products = Array.from(container.children);
+
+    products.sort(function(a, b) {
+      var priceA = parseFloat(a.dataset.price);
+      var priceB = parseFloat(b.dataset.price);
+      return sortBy === 'price-ascending' ? priceA - priceB : priceB - priceA;
+    });
+
+    container.innerHTML = '';
+    products.forEach(container.appendChild.bind(container));
+  });
+</script>
